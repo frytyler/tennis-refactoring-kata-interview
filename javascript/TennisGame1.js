@@ -3,65 +3,79 @@ var TennisGame1 = function(player1Name, player2Name) {
     this.m_score2 = 0;
     this.player1Name = player1Name;
     this.player2Name = player2Name;
+    this.game = new Game(0, 0);
 };
 
 TennisGame1.prototype.wonPoint = function(playerName) {
-    if (playerName === "player1")
+    if (playerName === 'player1') {
+        this.game.addPointToPlayerOne();
         this.m_score1 += 1;
-    else
+    } else {
+        this.game.addPointToPlayerTwo();
         this.m_score2 += 1;
+    }
+};
+
+const matchScoreToPhrase = score => {
+    const phrases = ['Love', 'Fifteen', 'Thirty', 'Forty'];
+
+    return phrases[score];
 };
 
 TennisGame1.prototype.getScore = function() {
-    var score = "";
-    var tempScore = 0;
+    var scoreAsPhrase = '';
     if (this.m_score1 === this.m_score2) {
-        switch (this.m_score1) {
-            case 0:
-                score = "Love-All";
-                break;
-            case 1:
-                score = "Fifteen-All";
-                break;
-            case 2:
-                score = "Thirty-All";
-                break;
-            default:
-                score = "Deuce";
-                break;
+        scoreAsPhrase = `${matchScoreToPhrase(this.m_score1)}-All`;
+        if (this.m_score1 > 2) {
+            scoreAsPhrase = 'Deuce';
         }
+    } else if (
+        (this.m_score1 >= 4 || this.m_score2 >= 4) &&
+        Math.abs(this.m_score1 - this.m_score2) >= 2
+    ) {
+        var scoreDiff = this.m_score1 - this.m_score2;
+        if (scoreDiff >= 2) scoreAsPhrase = 'Win for player1';
+        else if (scoreDiff <= -2) scoreAsPhrase = 'Win for player2';
     } else if (this.m_score1 >= 4 || this.m_score2 >= 4) {
-        var minusResult = this.m_score1 - this.m_score2;
-        if (minusResult === 1) score = "Advantage player1";
-        else if (minusResult === -1) score = "Advantage player2";
-        else if (minusResult >= 2) score = "Win for player1";
-        else score = "Win for player2";
+        scoreDiff = this.m_score1 - this.m_score2;
+        if (scoreDiff === 1) scoreAsPhrase = 'Advantage player1';
+        else if (scoreDiff === -1) scoreAsPhrase = 'Advantage player2';
     } else {
-        for (var i = 1; i < 3; i++) {
-            if (i === 1) tempScore = this.m_score1;
-            else {
-                score += "-";
-                tempScore = this.m_score2;
-            }
-            switch (tempScore) {
-                case 0:
-                    score += "Love";
-                    break;
-                case 1:
-                    score += "Fifteen";
-                    break;
-                case 2:
-                    score += "Thirty";
-                    break;
-                case 3:
-                    score += "Forty";
-                    break;
-            }
-        }
+        scoreAsPhrase = `${matchScoreToPhrase(
+            this.m_score1
+        )}-${matchScoreToPhrase(this.m_score2)}`;
     }
-    return score;
+    return scoreAsPhrase;
 };
 
-if (typeof window === "undefined") {
+class Game {
+    constructor(playerOneScore = 0, playerTwoScore = 0) {
+        this.playerOneScore = playerOneScore;
+        this.playTwoScore = playerTwoScore;
+    }
+
+    addPointToPlayerOne() {
+        this.playerOneScore += 1;
+    }
+
+    addPointToPlayerTwo() {
+        this.playerTwoScore += 1;
+    }
+
+    isWon() {
+        return (
+            (this.playerOneScore >= 4 || this.playerTwoScore >= 4) &&
+            Math.abs(this.playerOneScore - this.playerTwoScore) >= 2
+        );
+    }
+
+    whoWon() {}
+
+    getState() {
+        if (isWon()) return 'won';
+    }
+}
+
+if (typeof window === 'undefined') {
     module.exports = TennisGame1;
 }
